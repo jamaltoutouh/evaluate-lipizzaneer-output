@@ -14,7 +14,7 @@ import glob
 import sys
 from scipy.stats import shapiro
 
-output_folder = '../data/output/'
+output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
 data_folder = '../data/'
 dataset = 'mnist'
 
@@ -145,10 +145,11 @@ def get_last_voting_stats(master_log_filename, type='most voted'):
         stats['acc stats client id'] = get_client_id(get_independent_run_params(distributed_log_file))
         stats['acc stats client folder'] = distributed_log_file.split('/')[-2]
         stats['most voted acc'], subpop_accuracy = get_last_voting_stats_one_client(distributed_log_file, n_iterations)
-        _, stats['max acc'], stats['mean acc'], stats['std acc'] = get_stats(subpop_accuracy)
-        stats['improvement over max acc'] = stats['most voted acc'] - stats['max acc']
-        stats['improvement over mean acc'] = stats['most voted acc'] - stats['mean acc']
-        dataset.append(stats)
+        if len(subpop_accuracy)>0:
+            _, stats['max acc'], stats['mean acc'], stats['std acc'] = get_stats(subpop_accuracy)
+            stats['improvement over max acc'] = stats['most voted acc'] - stats['max acc']
+            stats['improvement over mean acc'] = stats['most voted acc'] - stats['mean acc']
+            dataset.append(stats)
 
     data_df = pd.DataFrame(dataset)
     if type == 'most voted':
