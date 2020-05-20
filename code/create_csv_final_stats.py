@@ -15,6 +15,7 @@ import sys
 from scipy.stats import shapiro
 
 output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
+output_folder = '../data/output/'
 data_folder = '../data/'
 dataset = 'mnist'
 
@@ -56,6 +57,10 @@ def get_iterations(parameters):
 
 def get_batch_size(parameters):
     return parameters['dataloader']['batch_size'] if not (parameters is None) else parameters
+
+
+def get_grid_size(parameters):
+    return len(parameters['general']['distribution']['client_nodes']) if not (parameters is None) else parameters
 
 def get_label_rate(parameters):
     return parameters['dataloader']['label_rate'] if not (parameters is None) else parameters
@@ -100,6 +105,7 @@ def get_fid_tvd_time_results(get_accuracy=True):
             n_iterations = get_iterations(independent_run_parameters)
             label_rate = get_label_rate(independent_run_parameters)
             batch_size = get_batch_size(independent_run_parameters)
+            grid_size = get_grid_size(independent_run_parameters)
             fid, tvd, execution_time_minutes, best_client, init_time = get_fid_tvd_time_bestclient_from_master_log(master_log)
             if not fid is None:
                 data['init_time'] = init_time
@@ -108,6 +114,7 @@ def get_fid_tvd_time_results(get_accuracy=True):
                 data['execution_time'] = execution_time_minutes
                 data['best FID client'] = best_client
                 data['n_iterations'] = n_iterations
+                data['grid_size'] = grid_size
                 data['label_rate'] = label_rate
                 data['batch_size'] = batch_size
                 if get_accuracy: accuracy_data = get_last_voting_stats(master_log_filename).to_dict()
