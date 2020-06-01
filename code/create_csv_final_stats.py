@@ -15,7 +15,7 @@ import sys
 from scipy.stats import shapiro
 
 output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
-output_folder = '../data/output/'
+#output_folder = '../data/output/'
 data_folder = '../data/'
 dataset = 'mnist'
 
@@ -103,7 +103,10 @@ def get_fid_tvd_time_results(get_accuracy=True):
         if len(distributed_log_files) != 0:
             independent_run_parameters = get_independent_run_params(distributed_log_files[0])
             n_iterations = get_iterations(independent_run_parameters)
-            label_rate = get_label_rate(independent_run_parameters)
+            try:
+                label_rate = get_label_rate(independent_run_parameters)
+            except:
+                label_rate = 1
             batch_size = get_batch_size(independent_run_parameters)
             grid_size = get_grid_size(independent_run_parameters)
             fid, tvd, execution_time_minutes, best_client, init_time = get_fid_tvd_time_bestclient_from_master_log(master_log)
@@ -117,10 +120,16 @@ def get_fid_tvd_time_results(get_accuracy=True):
                 data['grid_size'] = grid_size
                 data['label_rate'] = label_rate
                 data['batch_size'] = batch_size
-                if get_accuracy: accuracy_data = get_last_voting_stats(master_log_filename).to_dict()
-                data = {**data, **accuracy_data}
-                dataset.append(data)
-                processed_independent_runs += 1
+                if get_accuracy: 
+                    accuracy_info = get_last_voting_stats(master_log_filename)
+                    try:
+                        #if isinstance(accuracy_info, str):
+                        accuracy_data = accuracy_info.to_dict()
+                        data = {**data, **accuracy_data}
+                        dataset.append(data)
+                        processed_independent_runs += 1
+                    except:
+                        pass
 
     print('Processed {} independent runs. '.format(processed_independent_runs))
 
@@ -159,14 +168,17 @@ def get_last_voting_stats(master_log_filename, type='most voted'):
             dataset.append(stats)
 
     data_df = pd.DataFrame(dataset)
-    if type == 'most voted':
-        return data_df.loc[data_df['most voted acc'].idxmax()]
-    elif type == 'max':
-        return data_df.loc[data_df['max acc'].idxmax()]
-    elif type == 'imporvement over mean':
-        return data_df.loc[data_df['improvement over mean acc'].idxmax()]
-    elif type == 'improvement over max':
-        return data_df.loc[data_df['improvement over max acc'].idxmax()]
+    try:
+        if type == 'most voted':
+            return data_df.loc[data_df['most voted acc'].idxmax()]
+        elif type == 'max':
+            return data_df.loc[data_df['max acc'].idxmax()]
+        elif type == 'imporvement over mean':
+            return data_df.loc[data_df['improvement over mean acc'].idxmax()]
+        elif type == 'improvement over max':
+            return data_df.loc[data_df['improvement over max acc'].idxmax()]
+    except:
+        return 'No accuracy info'
 
 
 #
@@ -175,7 +187,7 @@ def get_last_voting_stats(master_log_filename, type='most voted'):
 
 #print(get_last_voting_stats('/home/jamal/Documents/Research/sourcecode/evaluate-lipizzaneer-output/data/output/lipizzaner_gan/distributed/mnist/2020-05-14_19-07-57/10612/lipizzaner_2020-05-14_19-07.log', 100))
 
-results_df = get_fid_tvd_time_results()
+results_df = get_fid_tvd_time_results(True)
 results_df.to_csv(data_folder + dataset + '-summary_results.csv', index=False)
 
 

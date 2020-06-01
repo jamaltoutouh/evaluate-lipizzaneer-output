@@ -17,6 +17,7 @@ import sys
 from scipy.stats import shapiro
 
 output_folder = '../data/output/'
+output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
 data_folder = '../data/'
 dataset = 'mnist'
 
@@ -135,7 +136,16 @@ def get_evolution(metric='fid'):
     print('Processed {} independent runs. '.format(processed_independent_runs))
 
 
+
+
+import sys
+
 metrics = ['fid', 'gen_loss', 'disc_loss', 'gen_lr', 'disc_lr', 'per_label_accuracy', 'training_accuracy']
 
 
-get_evolution(metrics[6])
+if len(sys.argv)<2:
+    print('We need an argument for the metric to get')
+    print('Metrics: {}'.format(metrics))
+else:
+    print('Creating evolution files of: {}'.format(metrics[int(sys.argv[1])]))
+    get_evolution(metrics[int(sys.argv[1])])
