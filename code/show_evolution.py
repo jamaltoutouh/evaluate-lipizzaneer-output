@@ -11,8 +11,6 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 from matplotlib.figure import figaspect
 import seaborn as sns
-sns.set(style="whitegrid")
-sns.set(font_scale=2)
 import pandas as pd
 
 import numpy as np
@@ -53,16 +51,21 @@ def show_evolution_of_df(data_df):
     fig.tight_layout()
     fig.show()
 
-def show_accuracy_label_evolution(data_df, image_path, epoch):
+def show_accuracy_label_evolution(data_df, image_path='no-gif', epoch=100):
     labels = list(range(10))
     sns.set(style="whitegrid")
+    sns.set(font_scale=1.6)
     sns.set_style("ticks")
-    fig, ax = plt.subplots()
+    w, h = figaspect(4/3.2)
+    f, ax = plt.subplots(figsize=(w, h))
     plt.ylim(0, 100)
     plt.bar(labels, data_df.iloc[epoch])
-    plt.title('MNIST - Training epoch: {}'.format(epoch))
+    #plt.title('MNIST - Training epoch: {}'.format(epoch))
     plt.ylabel('Classification accuracy (%)')
+    plt.xlabel('MNIST class label')
     plt.xticks(labels)
+    plt.tight_layout()
+    image_path = 'accuracy-{:04d}.png'.format(epoch) if image_path == 'no-gif' else image_path
     plt.savefig(image_path)
     #plt.show()
 
@@ -148,10 +151,11 @@ def show_evolution(log_file):
     data_df = pd.read_csv(log_file, index_col=False)
     show_evolution_of_df(data_df)
 
-def show_evolution_of_2df(data_acc, data_fid,  image_path, epoch):
+def show_evolution_of_2df(data_acc, data_fid,  image_path='output-image.png', epoch=99):
     data_acc = get_stats_to_paint(data_acc)
     data_fid = get_stats_to_paint(data_fid)
-    sns.set(style="whitegrid")
+    sns.set(style="ticks")
+    sns.set(font_scale=1.6)
     sns.set_style("ticks")
     x = np.arange(0, epoch+1)
     fig, ax1 = plt.subplots()
@@ -185,7 +189,16 @@ acc_label_log_file = '/home/jamal/Documents/Research/sourcecode/evaluate-lipizza
 acc_log_file = '/home/jamal/Documents/Research/sourcecode/evaluate-lipizzaneer-output/data/evolution/mnist-training_accuracy-evolution-lipizzaner_2020-05-17_08-21.csv'
 fid_log_file = '/home/jamal/Documents/Research/sourcecode/evaluate-lipizzaneer-output/data/evolution/mnist-fid-evolution-lipizzaner_2020-05-17_08-21.csv'
 
-createa_video(acc_label_log_file, acc_log_file, fid_log_file, client_id, step=1)
+
+data = dict()
+data_acc = pd.read_csv(acc_label_log_file, index_col=False)
+for label in range(10):
+    col_name = '{} - {}'.format(client_id, label)
+    data['{}'.format(label)] = data_acc[col_name].tolist()
+data_label_acc = pd.DataFrame(data)
+show_accuracy_label_evolution(data_label_acc, image_path='no-gif', epoch=99)
+
+#createa_video(acc_label_log_file, acc_log_file, fid_log_file, client_id, step=1)
 #show_evolution_fid_vs_acc(acc_log_file, fid_log_file)
 #show_evolution(acc_log_file)
 

@@ -15,7 +15,7 @@ import sys
 from scipy.stats import shapiro
 
 output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
-output_folder = '../data/output/'
+output_folder = '../data/output-medium/'
 data_folder = '../data/'
 dataset = 'mnist'
 
