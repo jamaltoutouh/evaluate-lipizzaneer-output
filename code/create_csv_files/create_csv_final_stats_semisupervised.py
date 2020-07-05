@@ -15,9 +15,9 @@ import sys
 from scipy.stats import shapiro
 
 output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
-#output_folder = '../data/output/'
-data_folder = '../data/'
-dataset = 'mnist'
+output_folder = '../../data/output-medium/'
+data_folder = '../../data/'
+dataset = 'covid' #'cifar' #'covid'
 
 
 def get_stats(values):
@@ -120,16 +120,18 @@ def get_fid_tvd_time_results(get_accuracy=True):
                 data['grid_size'] = grid_size
                 data['label_rate'] = label_rate
                 data['batch_size'] = batch_size
-                if get_accuracy: 
+                if get_accuracy:
                     accuracy_info = get_last_voting_stats(master_log_filename)
                     try:
-                        #if isinstance(accuracy_info, str):
                         accuracy_data = accuracy_info.to_dict()
                         data = {**data, **accuracy_data}
                         dataset.append(data)
                         processed_independent_runs += 1
                     except:
                         pass
+                else:
+                    dataset.append(data)
+                    processed_independent_runs += 1
 
     print('Processed {} independent runs. '.format(processed_independent_runs))
 
@@ -181,13 +183,8 @@ def get_last_voting_stats(master_log_filename, type='most voted'):
         return 'No accuracy info'
 
 
-#
-# master_log_filename = 'lipizzaner_2020-05-16_14-46.log'
-# get_last_voting_stats(master_log_filename)
-
-#print(get_last_voting_stats('/home/jamal/Documents/Research/sourcecode/evaluate-lipizzaneer-output/data/output/lipizzaner_gan/distributed/mnist/2020-05-14_19-07-57/10612/lipizzaner_2020-05-14_19-07.log', 100))
 
 results_df = get_fid_tvd_time_results(True)
-results_df.to_csv(data_folder + dataset + '-summary_results.csv', index=False)
+results_df.to_csv(data_folder + dataset + '-summary_results-medium.csv', index=False)
 
 
