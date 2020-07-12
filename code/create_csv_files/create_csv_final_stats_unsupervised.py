@@ -112,7 +112,7 @@ def get_fid_tvd_time_results(get_accuracy=True):
             fid, tvd, execution_time_minutes, best_client, init_time = get_fid_tvd_time_bestclient_from_master_log(master_log)
             if not fid is None:
                 data['init_time'] = init_time
-                data['fid'] = fid
+                data['score'] = fid
                 data['tvd'] = tvd
                 data['execution_time'] = execution_time_minutes
                 data['best FID client'] = best_client

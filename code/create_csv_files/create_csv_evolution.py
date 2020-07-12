@@ -20,7 +20,7 @@ output_folder = '../../data/output/'
 # output_folder = '/home/jamaltoutouh/semi-supervised/lipizzaner-gan/src/output/'
 # output_folder = '../data/output-medium/'
 data_folder = '../../data/'
-dataset = 'covid'
+dataset = 'mnist'
 
 def get_all_master_log_files():
     return [filepath for filepath in glob.iglob(output_folder + 'log/*.log')]
@@ -78,7 +78,7 @@ def get_evolution_one_client(client_log, metric='fid'):
         if metric =='training_accuracy' and 'Label Prediction Accuracy' in line:
             splitted_data = re.split(" |,|%", line)
             data.append(float(splitted_data[-3]))
-        elif not metric in ['per_label_accuracy', 'training_accuracy'] and 'Iteration=' in line:
+        elif not metric in ['per_label_accuracy', 'training_accuracy', 'gen_vs_disc_loss'] and 'Iteration=' in line:
             splitted_data = re.split("- |,|%", line)
             analized_data = splitted_data[3:9]
             data.append(get_metric_value(analized_data, metric))
@@ -92,6 +92,12 @@ def get_evolution_one_client(client_log, metric='fid'):
                 label += 1
                 line = f.readline()
             data.append(data_row)
+        elif metric == 'gen_vs_disc_loss' and 'Iteration=' in line:
+            data_dict = dict()
+            splitted_data = re.split("- |,|%", line)
+            analized_data = splitted_data[3:9]
+            data_dict['generator_loss'], data_dict['discriminator_loss'] = get_metric_value(analized_data, 'gen_loss'), get_metric_value(analized_data, 'disc_loss')
+            data.append(data_dict)
         line = f.readline()
 
     if len(data)>0:
@@ -109,8 +115,13 @@ def get_evolution_distributed(master_log_filename, metric='fid'):
         client_id = get_client_id(get_independent_run_params(distributed_log_file))
         if metric != 'per_label_accuracy':
             data = get_evolution_one_client(distributed_log_file, metric)
-            if not data is None and len(data) == n_iterations:
+            if (metric == 'gen_vs_disc_loss') and not data is None and len(data) == n_iterations:
+                aux_df = pd.DataFrame(data)
+                data_set['gen_loss-{}'.format(client_id)] = aux_df['generator_loss'].tolist()
+                data_set['disc_loss-{}'.format(client_id)] = aux_df['discriminator_loss'].tolist()
+            elif not data is None and len(data) == n_iterations:
                 data_set['{}'.format(client_id)] = data
+
         else:
             data = get_evolution_one_client(distributed_log_file, metric)
             if not data is None and len(data) == n_iterations:
@@ -141,12 +152,13 @@ def get_evolution(metric='fid'):
 
 import sys
 
-metrics = ['fid', 'gen_loss', 'disc_loss', 'gen_lr', 'disc_lr', 'per_label_accuracy', 'training_accuracy']
+metrics = ['fid', 'gen_loss', 'disc_loss', 'gen_lr', 'disc_lr', 'per_label_accuracy', 'training_accuracy', 'gen_vs_disc_loss']
 
+get_evolution('gen_vs_disc_loss')
 
-if len(sys.argv)<2:
-    print('We need an argument for the metric to get')
-    print('Metrics: {}'.format(metrics))
-else:
-    print('Creating evolution files of: {}'.format(metrics[int(sys.argv[1])]))
-    get_evolution(metrics[int(sys.argv[1])])
+# if len(sys.argv)<2:
+#     print('We need an argument for the metric to get')
+#     print('Metrics: {}'.format(metrics))
+# else:
+#     print('Creating evolution files of: {}'.format(metrics[int(sys.argv[1])]))
+#     get_evolution(metrics[int(sys.argv[1])])
